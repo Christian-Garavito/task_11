@@ -67,8 +67,8 @@ def sopa(matriz,palabras):
 def main():
     """Esta es la funcion principal"""
     # snake case
-    vector_respuesta = get_data("vector-solucion.json")
-    sopa_letras= get_data("sopa-letras-llena.json")
+    vector_respuesta = get_data("vector-solucion-cobos.json")
+    sopa_letras= get_data("palabras-cobos.json")
     print(vector_respuesta)
     print_sopa(sopa_letras)
     print("===========================================")

@@ -77,7 +77,7 @@ def print_sopa(sopa_letras):
 
 
 def letra_aleatoria():
-    return random.choice(string.ascii_lowercase) #upper
+    return random.choice(string.ascii_uppercase) #upper
 
 
 def disponible_horizontal(linea_sopa, palabra):

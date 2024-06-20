@@ -1,11 +1,9 @@
 
 # Importacion de liberias a utilizar
 import json
+import random
 from functools import reduce
 import numpy as np
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.pdfgen import canvas
 
 # Lee el archivo JSON y lo convierte a un diccionario
 def get_data(filename):
@@ -16,65 +14,31 @@ def get_data(filename):
 def print_sopa(sopa_letras):
     print("\n".join(["\t".join([str(cell) for cell in row]) for row in sopa_letras]))
 
-# Función para buscar palabras en la sopa de letras
-def buscar_palabras(sopa, palabras):
-    filas = len(sopa)
-    columnas = len(sopa[0])
-    direcciones = [(0, 1), (1, 0), (1, 1), (1, -1)]
-    encontrado = []
+# Función para buscar una palabra en la matriz en una dirección específica
+def buscar_palabra(matriz, palabra, direccion):
+    tamaño = len(matriz)
+    longitud = len(palabra)
+    
+    for fila in range(tamaño):
+        for columna in range(tamaño):
+            # Check if the word fits in the current direction
+            fin_fila = fila + direccion[0] * (longitud - 1)
+            fin_columna = columna + direccion[1] * (longitud - 1)
+            
+            if 0 <= fin_fila < tamaño and 0 <= fin_columna < tamaño:
+                encontrada = True
+                for i in range(longitud):
+                    nueva_fila = fila + i * direccion[0]
+                    nueva_columna = columna + i * direccion[1]
+                    if matriz[nueva_fila][nueva_columna] != palabra[i]:
+                        encontrada = False
+                        break
+                if encontrada:
+                    return (fila, columna), (fin_fila, fin_columna)
+    return None
 
-    def en_rango(x, y):
-        return 0 <= x < filas and 0 <= y < columnas
-
-    def buscar_palabra(palabra):
-        for x in range(filas):
-            for y in range(columnas):
-                for dx, dy in direcciones:
-                    nx, ny = x, y
-                    for letra in palabra:
-                        if en_rango(nx, ny) and sopa[nx][ny] == letra:
-                            nx += dx
-                            ny += dy
-                        else:
-                            break
-                    else:
-                        return (x, y, dx, dy)
-        return None
-
-    for palabra in palabras:
-        resultado = buscar_palabra(palabra)
-        if resultado:
-            encontrado.append((palabra, resultado))
-    return encontrado
-
-# Generar el PDF con la sopa de letras y las palabras encontradas
-def generar_pdf(sopa, palabras, resultados, nombre_archivo):
-    c = canvas.Canvas(nombre_archivo, pagesize=letter)
-    width, height = letter
-    c.setFont("Helvetica", 12)
-
-    # Dibujar la sopa de letras
-    tamano_celda = 20
-    x_inicial = 50
-    y_inicial = height - 50
-
-    for i, fila in enumerate(sopa):
-        for j, letra in enumerate(fila):
-            c.drawString(x_inicial + j * tamano_celda, y_inicial - i * tamano_celda, letra)
-
-    # Destacar las palabras encontradas
-    for palabra, (x, y, dx, dy) in resultados:
-        c.setFillColor(colors.red)
-        for i, letra in enumerate(palabra):
-            c.drawString(x_inicial + (y + i * dy) * tamano_celda, y_inicial - (x + i * dx) * tamano_celda, letra)
-        c.setFillColor(colors.black)
-
-    # Dibujar la lista de palabras
-    c.drawString(x_inicial, y_inicial - len(sopa) * tamano_celda - 20, "Palabras a buscar:")
-    for i, palabra in enumerate(palabras):
-        c.drawString(x_inicial, y_inicial - len(sopa) * tamano_celda - 40 - i * 20, palabra)
-
-    c.save()
+# Función para resolver la sopa de letras
+def resolver_sopa(matriz, palabras):
     direcciones = [
         (0, 1),    # Horizontal derecha
         (1, 0),    # Vertical abajo
@@ -89,24 +53,27 @@ def generar_pdf(sopa, palabras, resultados, nombre_archivo):
     resultados = {}
     for palabra in palabras:
         for direccion in direcciones:
-            resultado = buscar_palabra(sopa, palabra, direccion)
+            resultado = buscar_palabra(matriz, palabra, direccion)
             if resultado:
                 resultados[palabra] = resultado
                 break
     return resultados
 
+def sopa(matriz,palabras):
+    resultados = resolver_sopa(matriz, palabras)
+    for palabra, coordenadas in resultados.items():
+        print(f"La palabra '{palabra}' se encuentra desde {coordenadas[0]} hasta {coordenadas[1]}")
+
 def main():
     """Esta es la funcion principal"""
     # snake case
-    vector_respuesta = get_data("vector-solucion.json")
-    sopa_letras= get_data("sopa-letras-llena.json")
+    vector_respuesta = get_data("vector-solucion-cobos.json")
+    sopa_letras= get_data("palabras-cobos.json")
     print(vector_respuesta)
     print_sopa(sopa_letras)
     print("===========================================")
 
-    # Buscar palabras y generar el PDF
-    resultados = buscar_palabras(sopa_letras, vector_respuesta)
-    generar_pdf(sopa_letras, vector_respuesta, resultados, "sopa_de_letras.pdf")
+    sopa(sopa_letras,vector_respuesta)
 
 
 
