@@ -1,15 +1,103 @@
+import json
+from itertools import chain
 import urllib3
-from urllib3.exceptions import RequestError
+from urllib3.exceptions import RequestError, ConnectionError, HTTPError
+import random
+import string
 
-try:
-    http = urllib3.PoolManager()
-    res = http.request(
-        method="GET", 
-        url="https://pokeapi.co/api/v2"
+
+def get_info_apis(url):
+    try:
+        http = urllib3.PoolManager()
+        res = http.request(method="GET", url=url)
+        response = json.loads(res.data.decode())
+        return response
+    except RequestError as ex:
+        print("error1", ex)
+    except ConnectionError as ex:
+        print("error2", ex)
+    except HTTPError as ex:
+        print("error3", ex)
+    except Exception as ex:
+        print("name_error", type(ex).__name__)
+        print("error4", ex)
+
+
+def get_info_api_1():
+    response = get_info_apis("https://jsonplaceholder.typicode.com/users")
+
+    names = []
+    try:
+        for i in range(3):
+            names.append(response[i]["username"].lower())
+
+        return names
+    except KeyError as key_error:
+        print("No se obtubo el valor debido a:", key_error)
+
+
+def get_info_api_2():
+    response = get_info_apis("https://dummyjson.com/recipes")
+
+    recetas = response["recipes"]
+
+    names_meal_type = []
+    try:
+        for receta in recetas:
+            names_meal_type.extend(receta["mealType"])
+
+        return [meal.lower() for meal in names_meal_type][0:3]
+    except KeyError as key_error:
+        print("No se obtubo el valor debido a:", key_error)
+
+
+def get_info_api_3():
+    response = get_info_apis("https://www.omdbapi.com/?apikey=3923e2e&page=1&s=marvel")
+
+    peliculas = response["Search"]
+
+    movie_types = []
+    try:
+        for pelicula in peliculas:
+            movie_types.append(pelicula["Type"].lower())
+
+        return list(set(movie_types))[0:3]
+    except KeyError as key_error:
+        print("No se obtubo el valor debido a:", key_error)
+
+
+def print_sopa(sopa_letras):
+    print("\n".join(["\t".join([str(cell) for cell in row]) for row in sopa_letras]))
+
+def letra_aleatoria():
+        return random.choice(string.ascii_lowercase)
+
+def llenar_sopa(sopa_letras):
+    
+    return
+
+
+
+def main():
+    """Esta es la funcion principal"""
+    palabras = list(
+        chain.from_iterable(
+            [
+                get_info_api_1(),
+                get_info_api_2(),
+                get_info_api_3(),
+            ]
+        )
     )
-    print(res.data.decode())
-except RequestError as ex:
-    print("error1", ex)
-except Exception as ex:
-    print("name_error", type(ex).__name__)
-    print("error2", ex)
+
+    print(palabras)
+
+    
+
+    sopa = [[letra_aleatoria() for _ in range(15)] for _ in range(15)]
+
+    print_sopa(sopa)
+
+
+if __name__ == "__main__":
+    main()
