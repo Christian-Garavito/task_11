@@ -1,10 +1,7 @@
 # Importacion de liberias a utilizar
 import json
-import random
-from functools import reduce
-import numpy as np
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+
+
 
 # Lee el archivo JSON y lo convierte a un diccionario
 def get_data(filename):
